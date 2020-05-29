@@ -1,24 +1,5 @@
 
-
-```
-from google.colab import files
-uploaded = files.upload()
-```
-
-
-
-     <input type="file" id="files-713e1e25-2d82-4016-beb1-8aae8eebefb8" name="files[]" multiple disabled />
-     <output id="result-713e1e25-2d82-4016-beb1-8aae8eebefb8">
-      Upload widget is only available when the cell has been executed in the
-      current browser session. Please rerun this cell to enable.
-      </output>
-      <script src="/nbextensions/google.colab/files.js"></script> 
-
-
-    Saving kaggle.json to kaggle.json
-
-
-#Cat and Dog classifier
+# Cat and Dog classifier
 In this notebook I'm gonna build a CNN model for cat and dog classification problem. The CNN architecture which I'm going to use is based on [VGG](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwiA5P_LiNnpAhXBknIEHWl_B8MQFjAAegQIAxAB&url=https%3A%2F%2Farxiv.org%2Fpdf%2F1409.1556&usg=AOvVaw3u_l2DJveBaeO_vs_qyLMT) acrchitecture.
 Also I will use Pytorch for main framework.
 
@@ -27,14 +8,7 @@ The dataset I'm going to use is [this dataset](https://www.kaggle.com/biaiscienc
 
 
 
-```
-! mkdir ~/.kaggle
-! cp kaggle.json ~/.kaggle/
-! chmod 600 ~/.kaggle/kaggle.json
-```
-
-
-```
+```python
 import os
 from datetime import datetime
 from random import randrange
@@ -61,13 +35,13 @@ So at the first step, we're going to download and arrange the dataset. So we cre
 
 
 
-```
+```python
 ! mkdir training_dataset
 ! mkdir test_dataset
 ```
 
 
-```
+```python
 !kaggle datasets download -d biaiscience/dogs-vs-cats
 ```
 
@@ -77,14 +51,14 @@ So at the first step, we're going to download and arrange the dataset. So we cre
 
 
 
-```
+```python
 import zipfile
 with zipfile.ZipFile("dogs-vs-cats.zip", 'r') as zip_ref:
     zip_ref.extractall(".")
 ```
 
 
-```
+```python
 counter = 0
 src_name = './train/train/'
 for f in os.listdir(src_name):
@@ -105,14 +79,14 @@ print(counter)
 
 
 
-```
+```python
 ! rm -rf test train dogs-vs-cats.zip
 ```
 
 As you can see as we said, there is 25000 images for train set and 12500 images for test set and we moved train images to training_dataset folder and test images to test_dataset.
 
 
-```
+```python
 n_training_data = len(os.listdir('training_dataset'))
 n_test_data = len(os.listdir('test_dataset'))
 
@@ -125,13 +99,13 @@ print('total test data: ', n_test_data)
 
 
 
-```
+```python
 ! mkdir ./training_dataset/dogs
 ! mkdir ./training_dataset/cats
 ```
 
 
-```
+```python
 ! mkdir validation_dataset
 ! mkdir validation_dataset/dogs/
 ! mkdir validation_dataset/cats/
@@ -140,7 +114,7 @@ print('total test data: ', n_test_data)
 Also we created a Validation folder for validating model during training.
 
 
-```
+```python
 ndogs = ncats = 0
 for f in os.listdir('./training_dataset'):
     if 'dog' in f and f != 'dogs':
@@ -160,7 +134,7 @@ print(f'#cats: {ncats} , #dogs: {ndogs}')
 No we have two subfolders which contains images of each category.
 
 
-```
+```python
 train_path = './training_dataset/'
 valid_path = './validation_dataset/'
 for i in range(1000):
@@ -178,7 +152,7 @@ print('total validation set : ', len(os.listdir(valid_path + 'dogs/')) + len(os.
 And also we arrange the validation subfolders same as training folder.
 
 
-```
+```python
 def load_dataset(data_path):
     transformations = torchvision.transforms.Compose([
         transforms.Resize(255),
@@ -205,7 +179,7 @@ Then we wrote a python function to return the disired dataset based on Pytorch D
 
 
 
-```
+```python
 plt.figure(figsize=(18, 12))
 for i in range(12):
     plt.subplot(3, 4, i+1)
@@ -225,11 +199,11 @@ for i in range(12):
 ```
 
 
-![png](VGG_files/VGG_22_0.png)
+![png](VGG_files/VGG_20_0.png)
 
 
 
-```
+```python
 training_dataset = load_dataset('./training_dataset')
 validation_dataset = load_dataset('./validation_dataset')
 ```
@@ -237,7 +211,7 @@ validation_dataset = load_dataset('./validation_dataset')
 # Building the model
 
 
-```
+```python
 class VGGNet(nn.Module):
 
     def __init__(self, num_classes=2):
@@ -295,10 +269,10 @@ class VGGNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 ```
 
-#Training the model
+# Training the model
 
 
-```
+```python
 device = torch.device('cuda:0')
 
 model = VGGNet()
@@ -519,7 +493,7 @@ Now we're gonna run the model on the 140 images from the test dataset.
 below images are the results.
 
 
-```
+```python
 counter = 0
 for f in os.listdir('./test_dataset'):
     if 'rand' in f:
@@ -537,7 +511,7 @@ for f in os.listdir('./test_dataset'):
 ```
 
 
-```
+```python
 model = VGGNet()
 checkpoint = torch.load('./drive/My Drive/model.dms')
 model.load_state_dict(checkpoint['model_state_dict'])
@@ -597,7 +571,7 @@ model.to(device)
 
 
 
-```
+```python
 model.eval()
 predictions = []
 with torch.no_grad():
@@ -606,7 +580,7 @@ with torch.no_grad():
 ```
 
 
-```
+```python
 plt.figure(figsize=(30, 20))
 for i in range(20):
     image = test_dataset.dataset.imgs[i][0]
@@ -620,11 +594,11 @@ for i in range(20):
 ```
 
 
-![png](VGG_files/VGG_32_0.png)
+![png](VGG_files/VGG_30_0.png)
 
 
 
-```
+```python
 plt.figure(figsize=(30, 20))
 for i in range(20):
     image = test_dataset.dataset.imgs[20+i][0]
@@ -638,11 +612,11 @@ for i in range(20):
 ```
 
 
-![png](VGG_files/VGG_33_0.png)
+![png](VGG_files/VGG_31_0.png)
 
 
 
-```
+```python
 plt.figure(figsize=(30, 20))
 for i in range(20):
     image = test_dataset.dataset.imgs[40+i][0]
@@ -656,11 +630,11 @@ for i in range(20):
 ```
 
 
-![png](VGG_files/VGG_34_0.png)
+![png](VGG_files/VGG_32_0.png)
 
 
 
-```
+```python
 plt.figure(figsize=(30, 20))
 for i in range(20):
     image = test_dataset.dataset.imgs[60+i][0]
@@ -674,11 +648,11 @@ for i in range(20):
 ```
 
 
-![png](VGG_files/VGG_35_0.png)
+![png](VGG_files/VGG_33_0.png)
 
 
 
-```
+```python
 plt.figure(figsize=(30, 20))
 for i in range(20):
     image = test_dataset.dataset.imgs[80+i][0]
@@ -692,11 +666,11 @@ for i in range(20):
 ```
 
 
-![png](VGG_files/VGG_36_0.png)
+![png](VGG_files/VGG_34_0.png)
 
 
 
-```
+```python
 plt.figure(figsize=(30, 20))
 for i in range(20):
     image = test_dataset.dataset.imgs[100+i][0]
@@ -710,11 +684,11 @@ for i in range(20):
 ```
 
 
-![png](VGG_files/VGG_37_0.png)
+![png](VGG_files/VGG_35_0.png)
 
 
 
-```
+```python
 plt.figure(figsize=(30, 20))
 for i in range(20):
     image = test_dataset.dataset.imgs[120+i][0]
@@ -728,5 +702,5 @@ for i in range(20):
 ```
 
 
-![png](VGG_files/VGG_38_0.png)
+![png](VGG_files/VGG_36_0.png)
 
